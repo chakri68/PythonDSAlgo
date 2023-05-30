@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "visualstudioexptteam.vscodeintellicode",
+    "tkrkt.linenote",
+    "ms-python.vscode-pylance",
+    "ms-python.python",
+    "ms-python.autopep8"
+  ]
+}
