@@ -96,24 +96,24 @@ class LinkedList(Generic[T]):
     """
     Appends all the elements in the iterable at the end of the LinkedList
     """
-    curr_node = self._head
-    for _ in range(self._length - 1):
-      if curr_node is None:
-        raise Exception("Iteration Error")
-      curr_node = curr_node.next()
+    last_node = None
+    try:
+      last_node = self._get_node(-1)
+    except:
+      pass
     for i in iterable:
-      if curr_node is None:
+      if last_node is None:
         self._head = Node(i)
-        curr_node = self._head
+        last_node = self._head
         self._length += 1
         continue
-      curr_node.set_next(Node(i))
-      curr_node = curr_node.next()
+      last_node.set_next(Node(i))
+      last_node = last_node.next()
       self._length += 1
     return self
 
   def pop(self, index: int = -1):
-    if index > self._length or index < 0 - self._length or self._head is None:
+    if not self._index_exists(index):
       raise IndexError
     ind = index
     if ind < 0:
@@ -121,25 +121,42 @@ class LinkedList(Generic[T]):
     if self._length == 1:
       self._head = None
     elif ind == 0:
-      self._head = self._head.next()
+      self._head = cast(Node[T], self._head).next()
     else:
-      curr_node = self._head
-      for _ in range(ind - 1):
-        if curr_node is None:
-          raise Exception("Iteration Error")
-        curr_node = curr_node.next()
-      if curr_node is None or curr_node.next() is None:
-        raise Exception("Iteration Error")
-      node = curr_node.next()
-      prev_node = curr_node
+      prev_node = self._get_node(ind - 1)
+      node = prev_node.next()
       next_node = node.next() if node is not None else None
       prev_node.set_next(next_node)
       del node
     self._length -= 1
     return self
 
-  def _check_index(self, index: int):
+  def remove(self, val: T):
+    ind = 0
+    for i in self:
+      if i == val:
+        self.pop(ind)
+        break
+      ind += 1
+    return self
+
+  def _index_exists(self, index: int):
     return not (index > self._length or index < 0 - self._length or self._head is None)
+
+  def _get_node(self, index: int):
+    if not self._index_exists(index):
+      raise IndexError
+    ind = index
+    if ind < 0:
+      ind = self._length + ind
+    curr_node = self._head
+    for _ in range(ind):
+      if curr_node is None:
+        raise Exception(f"Accessing None at index {_}")
+      curr_node = curr_node.next()
+    if curr_node is None:
+      raise Exception(f"Accessing None at index {ind}")
+    return curr_node
 
   def __iter__(self):
     curr_node = self._head
@@ -148,21 +165,13 @@ class LinkedList(Generic[T]):
       curr_node = curr_node.next()
 
   def __getitem__(self, index: int):
-    if index > self._length or index < 0 - self._length or self._head is None:
-      raise IndexError
-    curr_ind = 0
-    curr_node = self._head
-    ind = index
-    if index < 0:
-      ind = self._length + index
-    while curr_ind < ind:
-      if curr_node is None:
-        raise Exception(f"Accessing None at index {curr_ind}")
-      curr_node = curr_node.next()
-      curr_ind += 1
-    if curr_node is None:
-      raise Exception(f"Accessing None at index {curr_ind}")
-    return curr_node.val()
+    req_node = self._get_node(index)
+    return req_node.val()
+
+  def __setitem__(self, index: int, val: T):
+    req_node = self._get_node(index)
+    req_node.set_val(val)
+    return self
 
   def __len__(self):
     return self._length
